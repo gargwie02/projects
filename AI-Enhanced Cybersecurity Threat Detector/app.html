@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Enhanced Cybersecurity Threat Detector</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00d4ff, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.1);
+        }
+
+        .panel h3 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .threat-level {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .threat-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .low { background-color: #4ecdc4; }
+        .medium { background-color: #ffa726; }
+        .high { background-color: #ff6b6b; }
+        .critical { background-color: #e53e3e; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .input-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .input-group input, .input-group textarea, .input-group select {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        .input-group input:focus, .input-group textarea:focus, .input-group select:focus {
+            outline: none;
+            border-color: #00d4ff;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #00d4ff, #4ecdc4);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        }
+
+        .results {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .threat-analysis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .threat-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid;
+        }
+
+        .malware { border-color: #ff6b6b; }
+        .phishing { border-color: #ffa726; }
+        .ddos { border-color: #ab47bc; }
+        .intrusion { border-color: #42a5f5; }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4, #00d4ff);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .logs {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        .log-info { background: rgba(0, 212, 255, 0.1); }
+        .log-warning { background: rgba(255, 167, 38, 0.1); }
+        .log-error { background: rgba(255, 107, 107, 0.1); }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .tab-container {
+            margin-bottom: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 5px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 20px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: linear-gradient(45deg, #00d4ff, #4ecdc4);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ AI-Enhanced Cybersecurity Threat Detector</h1>
+            <p>Advanced threat detection and analysis system powered by machine learning</p>
+        </div>
+
+        <div class="dashboard">
+            <div class="panel">
+                <h3>🎯 Real-time Threat Status</h3>
+                <div class="threat-level">
+                    <span>Network Intrusion</span>
+                    <div class="threat-indicator low" id="intrusion-indicator"></div>
+                </div>
+                <div class="threat-level">
+                    <span>Malware Detection</span>
+                    <div class="threat-indicator medium" id="malware-indicator"></div>
+                </div>
+                <div class="threat-level">
+                    <span>Phishing Attempts</span>
+                    <div class="threat-indicator high" id="phishing-indicator"></div>
+                </div>
+                <div class="threat-level">
+                    <span>DDoS Activity</span>
+                    <div class="threat-indicator low" id="ddos-indicator"></div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3>📊 System Statistics</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number" id="threats-blocked">247</div>
+                        <div>Threats Blocked</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="scan-accuracy">94.2%</div>
+                        <div>Accuracy Rate</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="active-monitors">12</div>
+                        <div>Active Monitors</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-container">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('analyze')">🔍 Threat Analysis</div>
+                <div class="tab" onclick="switchTab('manual')">📝 Manual Submission</div>
+                <div class="tab" onclick="switchTab('monitor')">📡 Network Monitor</div>
+                <div class="tab" onclick="switchTab('reports')">📋 Reports</div>
+            </div>
+        </div>
+
+        <div id="analyze-content" class="tab-content active">
+            <div class="input-section">
+                <h3>🔍 Analyze Potential Threats</h3>
+                
+                <div class="input-group">
+                    <label for="analysis-type">Analysis Type:</label>
+                    <select id="analysis-type">
+                        <option value="url">URL Analysis</option>
+                        <option value="file">File Analysis</option>
+                        <option value="network">Network Traffic</option>
+                        <option value="email">Email Content</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="input-data">Input Data:</label>
+                    <textarea id="input-data" rows="4" placeholder="Enter URL, file hash, network data, or email content..."></textarea>
+                </div>
+
+                <button class="btn" onclick="analyzeThreat()">🔍 Analyze Threat</button>
+                <button class="btn" onclick="deepScan()">🔬 Deep Scan</button>
+                <button class="btn btn-danger" onclick="emergencyBlock()">🚫 Emergency Block</button>
+            </div>
+
+            <div class="results" id="analysis-results" style="display: none;">
+                <h3>📊 Analysis Results</h3>
+                <div id="threat-score"></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="risk-progress"></div>
+                </div>
+                <div class="threat-analysis" id="threat-breakdown"></div>
+            </div>
+        </div>
+
+        <div id="manual-content" class="tab-content">
+            <div class="input-section">
+                <h3>📝 Manual Data Submission Portal</h3>
+                <p>Submit security incidents, suspicious activities, and threat intelligence manually</p>
+                
+                <div class="input-group">
+                    <label for="submission-type">Submission Type:</label>
+                    <select id="submission-type" onchange="updateSubmissionForm()">
+                        <option value="incident">🚨 Security Incident</option>
+                        <option value="suspicious-ip">🌐 Suspicious IP Address</option>
+                        <option value="malware-sample">🦠 Malware Sample</option>
+                        <option value="phishing-email">📧 Phishing Email</option>
+                        <option value="vulnerability">🔓 Vulnerability Report</option>
+                        <option value="threat-intel">🎯 Threat Intelligence</option>
+                        <option value="user-behavior">👤 Suspicious User Behavior</option>
+                        <option value="network-anomaly">📊 Network Anomaly</option>
+                    </select>
+                </div>
+
+                <div id="dynamic-form">
+                    <!-- Dynamic form fields will be populated here -->
+                </div>
+
+                <div class="input-group">
+                    <label for="severity-level">Severity Level:</label>
+                    <select id="severity-level">
+                        <option value="low">🟢 Low - Minimal Impact</option>
+                        <option value="medium">🟡 Medium - Moderate Impact</option>
+                        <option value="high">🟠 High - Significant Impact</option>
+                        <option value="critical">🔴 Critical - Severe Impact</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="confidence-level">Confidence Level:</label>
+                    <select id="confidence-level">
+                        <option value="low">Low (30-50%)</option>
+                        <option value="medium">Medium (51-75%)</option>
+                        <option value="high" selected>High (76-90%)</option>
+                        <option value="very-high">Very High (91-100%)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="additional-notes">Additional Notes & Context:</label>
+                    <textarea id="additional-notes" rows="4" placeholder="Provide any additional context, observations, or relevant details..."></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label for="tags">Tags (comma-separated):</label>
+                    <input type="text" id="tags" placeholder="e.g., malware, banking, trojan, apt, insider-threat">
+                </div>
+
+                <div class="input-group">
+                    <label>
+                        <input type="checkbox" id="urgent-flag"> 
+                        🚨 Mark as Urgent (Requires immediate attention)
+                    </label>
+                </div>
+
+                <button class="btn" onclick="submitManualData()">📤 Submit Data</button>
+                <button class="btn" onclick="validateSubmission()">✅ Validate Before Submit</button>
+                <button class="btn btn-danger" onclick="clearForm()">🗑️ Clear Form</button>
+            </div>
+
+            <div class="results" id="submission-results" style="display: none;">
+                <h3>📋 Submission Summary</h3>
+                <div id="submission-details"></div>
+            </div>
+
+            <div class="results">
+                <h3>📊 Recent Submissions</h3>
+                <div id="recent-submissions">
+                    <div class="threat-card malware">
+                        <h4>🦠 Malware Sample #MS-2024-001</h4>
+                        <p><strong>Type:</strong> Trojan.Win32.Agent</p>
+                        <p><strong>Submitted:</strong> 2 hours ago</p>
+                        <p><strong>Status:</strong> <span style="color: #4ecdc4;">Analyzed</span></p>
+                    </div>
+                    <div class="threat-card phishing">
+                        <h4>📧 Phishing Campaign #PC-2024-015</h4>
+                        <p><strong>Target:</strong> Banking Credentials</p>
+                        <p><strong>Submitted:</strong> 5 hours ago</p>
+                        <p><strong>Status:</strong> <span style="color: #ffa726;">Under Review</span></p>
+                    </div>
+                    <div class="threat-card intrusion">
+                        <h4>🌐 Suspicious IP #IP-2024-087</h4>
+                        <p><strong>Address:</strong> 185.220.101.42</p>
+                        <p><strong>Submitted:</strong> 1 day ago</p>
+                        <p><strong>Status:</strong> <span style="color: #ff6b6b;">Blocked</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+            <div class="input-section">
+                <h3>📡 Network Monitoring</h3>
+                <div class="input-group">
+                    <label for="ip-range">IP Range to Monitor:</label>
+                    <input type="text" id="ip-range" placeholder="192.168.1.0/24" value="192.168.1.0/24">
+                </div>
+                <div class="input-group">
+                    <label for="monitor-duration">Monitor Duration (minutes):</label>
+                    <input type="number" id="monitor-duration" value="5" min="1" max="60">
+                </div>
+                <button class="btn" onclick="startNetworkMonitor()">🚀 Start Monitoring</button>
+                <button class="btn btn-danger" onclick="stopNetworkMonitor()">⏹️ Stop Monitoring</button>
+            </div>
+
+            <div class="results">
+                <h3>🌐 Network Activity</h3>
+                <div class="logs" id="network-logs"></div>
+            </div>
+        </div>
+
+        <div id="monitor-content" class="tab-content">
+            <div class="results">
+                <h3>📋 Threat Intelligence Reports</h3>
+                <div class="threat-analysis">
+                    <div class="threat-card malware">
+                        <h4>🦠 Malware Trends</h4>
+                        <p>Detected 23 new malware signatures this week</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 65%"></div>
+                        </div>
+                    </div>
+                    <div class="threat-card phishing">
+                        <h4>🎣 Phishing Campaigns</h4>
+                        <p>15 active phishing domains identified</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 45%"></div>
+                        </div>
+                    </div>
+                    <div class="threat-card ddos">
+                        <h4>⚡ DDoS Attacks</h4>
+                        <p>2 attempted DDoS attacks blocked</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 20%"></div>
+                        </div>
+                    </div>
+                    <div class="threat-card intrusion">
+                        <h4>🔐 Intrusion Attempts</h4>
+                        <p>8 unauthorized access attempts detected</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 30%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let networkMonitorInterval;
+        let threatDatabase = {
+            malicious_urls: [
+                'malware-site.com', 'phishing-bank.net', 'fake-login.org',
+                'suspicious-download.com', 'trojan-host.net'
+            ],
+            suspicious_ips: [
+                '192.168.1.100', '10.0.0.50', '172.16.0.25'
+            ],
+            threat_signatures: [
+                'base64_encoded_payload', 'eval(', 'document.write',
+                'iframe src=', 'script src=http'
+            ]
+        };
+
+        // Tab switching functionality
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-content').classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // AI-based threat analysis simulation
+        function analyzeThreat() {
+            const analysisType = document.getElementById('analysis-type').value;
+            const inputData = document.getElementById('input-data').value;
+            
+            if (!inputData.trim()) {
+                alert('Please enter data to analyze');
+                return;
+            }
+
+            // Show results section
+            document.getElementById('analysis-results').style.display = 'block';
+            
+            // Simulate AI analysis
+            const riskScore = calculateRiskScore(analysisType, inputData);
+            const threats = identifyThreats(analysisType, inputData);
+            
+            displayAnalysisResults(riskScore, threats);
+            
+            // Add to system logs
+            addLog('info', `Analyzed ${analysisType}: Risk Score ${riskScore}%`);
+        }
+
+        // Calculate risk score based on multiple factors
+        function calculateRiskScore(type, data) {
+            let baseScore = Math.random() * 30 + 10; // Base random score
+            
+            // Check against known threats
+            threatDatabase.malicious_urls.forEach(url => {
+                if (data.toLowerCase().includes(url)) {
+                    baseScore += 40;
+                }
+            });
+            
+            threatDatabase.threat_signatures.forEach(signature => {
+                if (data.toLowerCase().includes(signature)) {
+                    baseScore += 25;
+                }
+            });
+            
+            // Type-specific analysis
+            switch(type) {
+                case 'url':
+                    if (data.includes('http://')) baseScore += 15;
+                    if (data.includes('.tk') || data.includes('.ml')) baseScore += 10;
+                    break;
+                case 'email':
+                    if (data.includes('urgent') || data.includes('click here')) baseScore += 20;
+                    break;
+                case 'file':
+                    if (data.includes('.exe') || data.includes('.scr')) baseScore += 30;
+                    break;
+            }
+            
+            return Math.min(Math.round(baseScore), 100);
+        }
+
+        // Identify specific threat types
+        function identifyThreats(type, data) {
+            const threats = [];
+            
+            if (data.toLowerCase().includes('phish') || data.toLowerCase().includes('login')) {
+                threats.push({
+                    type: 'Phishing',
+                    severity: 'High',
+                    description: 'Potential phishing attempt detected',
+                    confidence: 85 + Math.random() * 10
+                });
+            }
+            
+            if (data.toLowerCase().includes('malware') || data.toLowerCase().includes('.exe')) {
+                threats.push({
+                    type: 'Malware',
+                    severity: 'Critical',
+                    description: 'Malicious software signature found',
+                    confidence: 90 + Math.random() * 10
+                });
+            }
+            
+            if (threatDatabase.suspicious_ips.some(ip => data.includes(ip))) {
+                threats.push({
+                    type: 'Suspicious IP',
+                    severity: 'Medium',
+                    description: 'Connection from known suspicious IP address',
+                    confidence: 75 + Math.random() * 15
+                });
+            }
+            
+            // Add random threats for demonstration
+            if (threats.length === 0 && Math.random() > 0.3) {
+                const randomThreats = [
+                    { type: 'Anomalous Behavior', severity: 'Low', description: 'Unusual pattern detected' },
+                    { type: 'Data Exfiltration', severity: 'High', description: 'Potential data theft attempt' },
+                    { type: 'Backdoor', severity: 'Critical', description: 'Unauthorized access mechanism' }
+                ];
+                
+                const randomThreat = randomThreats[Math.floor(Math.random() * randomThreats.length)];
+                randomThreat.confidence = 60 + Math.random() * 30;
+                threats.push(randomThreat);
+            }
+            
+            return threats;
+        }
+
+        // Display analysis results
+        function displayAnalysisResults(riskScore, threats) {
+            const threatScoreElement = document.getElementById('threat-score');
+            const riskProgressElement = document.getElementById('risk-progress');
+            const threatBreakdownElement = document.getElementById('threat-breakdown');
+            
+            // Update risk score
+            let riskLevel = 'Low';
+            let riskColor = '#4ecdc4';
+            
+            if (riskScore > 70) {
+                riskLevel = 'Critical';
+                riskColor = '#ff6b6b';
+            } else if (riskScore > 50) {
+                riskLevel = 'High';
+                riskColor = '#ffa726';
+            } else if (riskScore > 30) {
+                riskLevel = 'Medium';
+                riskColor = '#42a5f5';
+            }
+            
+            threatScoreElement.innerHTML = `
+                <h4>Risk Assessment: <span style="color: ${riskColor}">${riskLevel} (${riskScore}%)</span></h4>
+                <p>AI confidence level: ${Math.round(85 + Math.random() * 10)}%</p>
+            `;
+            
+            // Update progress bar
+            riskProgressElement.style.width = riskScore + '%';
+            riskProgressElement.style.background = `linear-gradient(90deg, ${riskColor}, #00d4ff)`;
+            
+            // Display threat breakdown
+            if (threats.length > 0) {
+                threatBreakdownElement.innerHTML = threats.map(threat => `
+                    <div class="threat-card ${threat.type.toLowerCase().replace(' ', '')}">
+                        <h4>🚨 ${threat.type}</h4>
+                        <p><strong>Severity:</strong> ${threat.severity}</p>
+                        <p><strong>Description:</strong> ${threat.description}</p>
+                        <p><strong>Confidence:</strong> ${Math.round(threat.confidence)}%</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${threat.confidence}%"></div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                threatBreakdownElement.innerHTML = `
+                    <div class="threat-card" style="border-color: #4ecdc4;">
+                        <h4>✅ No Immediate Threats Detected</h4>
+                        <p>The analyzed content appears to be safe based on current threat intelligence.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Deep scan functionality
+        function deepScan() {
+            addLog('info', 'Initiating deep scan with advanced AI models...');
+            
+            // Simulate deep scanning process
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 20;
+                addLog('info', `Deep scan progress: ${Math.round(progress)}%`);
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    addLog('info', 'Deep scan completed. Advanced threats analysis finished.');
+                    
+                    // Trigger analysis with enhanced results
+                    setTimeout(() => {
+                        analyzeThreat();
+                        addLog('warning', 'Deep scan revealed additional threat indicators');
+                    }, 1000);
+                }
+            }, 500);
+        }
+
+        // Emergency block functionality
+        function emergencyBlock() {
+            const inputData = document.getElementById('input-data').value;
+            if (!inputData.trim()) {
+                alert('Please specify what to block');
+                return;
+            }
+            
+            addLog('error', `EMERGENCY BLOCK ACTIVATED: ${inputData}`);
+            addLog('error', 'All traffic from specified source has been blocked');
+            
+            // Update threat indicators
+            updateThreatIndicators();
+            
+            alert('Emergency block activated! Threat has been isolated.');
+        }
+
+        // Network monitoring
+        function startNetworkMonitor() {
+            const ipRange = document.getElementById('ip-range').value;
+            const duration = document.getElementById('monitor-duration').value;
+            
+            addLog('info', `Starting network monitoring for ${ipRange}`);
+            addLog('info', `Monitor duration: ${duration} minutes`);
+            
+            // Clear previous logs
+            document.getElementById('network-logs').innerHTML = '';
+            
+            // Start monitoring simulation
+            networkMonitorInterval = setInterval(() => {
+                generateNetworkActivity();
+            }, 2000);
+            
+            // Stop monitoring after specified duration
+            setTimeout(() => {
+                stopNetworkMonitor();
+            }, duration * 60 * 1000);
+        }
+
+        function stopNetworkMonitor() {
+            if (networkMonitorInterval) {
+                clearInterval(networkMonitorInterval);
+                networkMonitorInterval = null;
+                addLog('info', 'Network monitoring stopped');
+            }
+        }
+
+        // Generate simulated network activity
+        function generateNetworkActivity() {
+            const activities = [
+                'Normal HTTP traffic detected',
+                'SSH connection established',
+                'DNS query processed',
+                'HTTPS handshake completed',
+                'Suspicious port scan detected',
+                'Unusual data transfer volume',
+                'Multiple failed login attempts',
+                'Potential brute force attack'
+            ];
+            
+            const activity = activities[Math.floor(Math.random() * activities.length)];
+            const timestamp = new Date().toLocaleTimeString();
+            const ip = `192.168.1.${Math.floor(Math.random() * 255)}`;
+            
+            const logLevel = activity.includes('Suspicious') || activity.includes('failed') || activity.includes('brute') ? 'warning' : 'info';
+            
+            addNetworkLog(logLevel, `[${timestamp}] ${ip}: ${activity}`);
+        }
+
+        // Add network log entry
+        function addNetworkLog(level, message) {
+            const logsContainer = document.getElementById('network-logs');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${level}`;
+            logEntry.textContent = message;
+            
+            logsContainer.appendChild(logEntry);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+            
+            // Keep only last 50 entries
+            while (logsContainer.children.length > 50) {
+                logsContainer.removeChild(logsContainer.firstChild);
+            }
+        }
+
+        // Add system log entry
+        function addLog(level, message) {
+            console.log(`[${level.toUpperCase()}] ${message}`);
+            
+            // Update statistics
+            if (level === 'error') {
+                const threatsBlocked = document.getElementById('threats-blocked');
+                threatsBlocked.textContent = parseInt(threatsBlocked.textContent) + 1;
+            }
+        }
+
+        // Update threat indicators
+        function updateThreatIndicators() {
+            const indicators = ['intrusion-indicator', 'malware-indicator', 'phishing-indicator', 'ddos-indicator'];
+            const levels = ['low', 'medium', 'high', 'critical'];
+            
+            indicators.forEach(indicator => {
+                const element = document.getElementById(indicator);
+                const currentLevel = element.className.split(' ').pop();
+                const currentIndex = levels.indexOf(currentLevel);
+                
+                // Randomly change threat level
+                if (Math.random() > 0.7) {
+                    const newIndex = Math.min(Math.max(currentIndex + (Math.random() > 0.5 ? 1 : -1), 0), levels.length - 1);
+                    element.className = `threat-indicator ${levels[newIndex]}`;
+                }
+            });
+        }
+
+        // Update system statistics
+        function updateStats() {
+            const accuracy = document.getElementById('scan-accuracy');
+            const monitors = document.getElementById('active-monitors');
+            
+            // Simulate changing accuracy
+            const currentAccuracy = parseFloat(accuracy.textContent);
+            const newAccuracy = Math.max(90, Math.min(99, currentAccuracy + (Math.random() - 0.5) * 2));
+            accuracy.textContent = newAccuracy.toFixed(1) + '%';
+            
+            // Simulate changing monitor count
+            const currentMonitors = parseInt(monitors.textContent);
+            const change = Math.random() > 0.8 ? (Math.random() > 0.5 ? 1 : -1) : 0;
+            monitors.textContent = Math.max(8, Math.min(16, currentMonitors + change));
+        }
+
+        // Manual data submission functionality
+        let submissionCounter = 1;
+        let submissions = [];
+
+        // Dynamic form generation based on submission type
+        function updateSubmissionForm() {
+            const submissionType = document.getElementById('submission-type').value;
+            const dynamicForm = document.getElementById('dynamic-form');
+            
+            const formConfigs = {
+                'incident': {
+                    fields: [
+                        { type: 'text', id: 'incident-id', label: 'Incident ID', placeholder: 'INC-2024-001' },
+                        { type: 'datetime-local', id: 'incident-time', label: 'Incident Time' },
+                        { type: 'select', id: 'incident-type', label: 'Incident Type', options: [
+                            'Data Breach', 'Malware Infection', 'Unauthorized Access', 'DDoS Attack', 'Insider Threat'
+                        ]},
+                        { type: 'textarea', id: 'incident-description', label: 'Incident Description', rows: 4 },
+                        { type: 'text', id: 'affected-systems', label: 'Affected Systems', placeholder: 'server01, workstation15' }
+                    ]
+                },
+                'suspicious-ip': {
+                    fields: [
+                        { type: 'text', id: 'ip-address', label: 'IP Address', placeholder: '192.168.1.100' },
+                        { type: 'text', id: 'source-country', label: 'Source Country', placeholder: 'Unknown' },
+                        { type: 'select', id: 'activity-type', label: 'Suspicious Activity', options: [
+                            'Port Scanning', 'Brute Force', 'Malware C&C', 'Data Exfiltration', 'Reconnaissance'
+                        ]},
+                        { type: 'number', id: 'connection-attempts', label: 'Connection Attempts', placeholder: '50' },
+                        { type: 'text', id: 'target-ports', label: 'Target Ports', placeholder: '22, 80, 443, 3389' }
+                    ]
+                },
+                'malware-sample': {
+                    fields: [
+                        { type: 'text', id: 'file-name', label: 'File Name', placeholder: 'suspicious_file.exe' },
+                        { type: 'text', id: 'file-hash', label: 'File Hash (MD5/SHA256)', placeholder: 'd41d8cd98f00b204e9800998ecf8427e' },
+                        { type: 'number', id: 'file-size', label: 'File Size (bytes)', placeholder: '1024000' },
+                        { type: 'select', id: 'malware-type', label: 'Malware Type', options: [
+                            'Trojan', 'Ransomware', 'Spyware', 'Adware', 'Rootkit', 'Worm', 'Virus'
+                        ]},
+                        { type: 'text', id: 'detection-method', label: 'Detection Method', placeholder: 'Antivirus, Behavioral Analysis' }
+                    ]
+                },
+                'phishing-email': {
+                    fields: [
+                        { type: 'email', id: 'sender-email', label: 'Sender Email', placeholder: 'suspicious@fake-bank.com' },
+                        { type: 'text', id: 'subject-line', label: 'Subject Line', placeholder: 'Urgent: Verify your account' },
+                        { type: 'url', id: 'malicious-url', label: 'Malicious URL', placeholder: 'https://fake-bank-login.com' },
+                        { type: 'select', id: 'phishing-type', label: 'Phishing Type', options: [
+                            'Credential Harvesting', 'Malware Delivery', 'Social Engineering', 'Business Email Compromise'
+                        ]},
+                        { type: 'textarea', id: 'email-content', label: 'Email Content (snippet)', rows: 3 }
+                    ]
+                },
+                'vulnerability': {
+                    fields: [
+                        { type: 'text', id: 'vuln-id', label: 'Vulnerability ID', placeholder: 'CVE-2024-0001' },
+                        { type: 'text', id: 'affected-software', label: 'Affected Software', placeholder: 'Windows Server 2019' },
+                        { type: 'text', id: 'cvss-score', label: 'CVSS Score', placeholder: '7.5' },
+                        { type: 'select', id: 'exploit-available', label: 'Exploit Available', options: ['Unknown', 'No', 'Yes', 'In the Wild'] },
+                        { type: 'textarea', id: 'vuln-description', label: 'Vulnerability Description', rows: 3 }
+                    ]
+                },
+                'threat-intel': {
+                    fields: [
+                        { type: 'text', id: 'ioc-value', label: 'Indicator of Compromise', placeholder: 'Domain, IP, Hash, etc.' },
+                        { type: 'select', id: 'ioc-type', label: 'IOC Type', options: [
+                            'Domain', 'IP Address', 'File Hash', 'URL', 'Email Address', 'Registry Key'
+                        ]},
+                        { type: 'text', id: 'threat-actor', label: 'Associated Threat Actor', placeholder: 'APT28, Lazarus Group' },
+                        { type: 'text', id: 'campaign-name', label: 'Campaign Name', placeholder: 'Operation XYZ' },
+                        { type: 'date', id: 'first-seen', label: 'First Seen Date' }
+                    ]
+                },
+                'user-behavior': {
+                    fields: [
+                        { type: 'text', id: 'user-id', label: 'User ID/Username', placeholder: 'john.doe' },
+                        { type: 'text', id: 'user-department', label: 'Department', placeholder: 'Finance' },
+                        { type: 'select', id: 'behavior-type', label: 'Suspicious Behavior', options: [
+                            'Unusual Login Times', 'Excessive Data Access', 'Privilege Escalation', 'Data Exfiltration'
+                        ]},
+                        { type: 'datetime-local', id: 'behavior-time', label: 'Time of Behavior' },
+                        { type: 'text', id: 'accessed-resources', label: 'Accessed Resources', placeholder: 'sensitive_documents/' }
+                    ]
+                },
+                'network-anomaly': {
+                    fields: [
+                        { type: 'text', id: 'source-ip', label: 'Source IP', placeholder: '10.0.1.50' },
+                        { type: 'text', id: 'destination-ip', label: 'Destination IP', placeholder: '8.8.8.8' },
+                        { type: 'number', id: 'data-volume', label: 'Data Volume (MB)', placeholder: '500' },
+                        { type: 'select', id: 'anomaly-type', label: 'Anomaly Type', options: [
+                            'Unusual Traffic Volume', 'Off-hours Activity', 'Unexpected Protocols', 'Geo-location Anomaly'
+                        ]},
+                        { type: 'text', id: 'protocol', label: 'Protocol', placeholder: 'TCP, UDP, ICMP' }
+                    ]
+                }
+            };
+
+            const config = formConfigs[submissionType];
+            if (!config) return;
+
+            dynamicForm.innerHTML = config.fields.map(field => {
+                if (field.type === 'select') {
+                    return `
+                        <div class="input-group">
+                            <label for="${field.id}">${field.label}:</label>
+                            <select id="${field.id}">
+                                ${field.options.map(option => `<option value="${option.toLowerCase().replace(/\s+/g, '-')}">${option}</option>`).join('')}
+                            </select>
+                        </div>
+                    `;
+                } else if (field.type === 'textarea') {
+                    return `
+                        <div class="input-group">
+                            <label for="${field.id}">${field.label}:</label>
+                            <textarea id="${field.id}" rows="${field.rows || 3}" placeholder="${field.placeholder || ''}"></textarea>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="input-group">
+                            <label for="${field.id}">${field.label}:</label>
+                            <input type="${field.type}" id="${field.id}" placeholder="${field.placeholder || ''}">
+                        </div>
+                    `;
+                }
+            }).join('');
+        }
+
+        // Submit manual data
+        function submitManualData() {
+            const submissionType = document.getElementById('submission-type').value;
+            const severityLevel = document.getElementById('severity-level').value;
+            const confidenceLevel = document.getElementById('confidence-level').value;
+            const additionalNotes = document.getElementById('additional-notes').value;
+            const tags = document.getElementById('tags').value;
+            const urgentFlag = document.getElementById('urgent-flag').checked;
+
+            // Collect dynamic form data
+            const dynamicData = {};
+            const dynamicForm = document.getElementById('dynamic-form');
+            const inputs = dynamicForm.querySelectorAll('input, select, textarea');
+            
+            inputs.forEach(input => {
+                dynamicData[input.id] = input.value;
+            });
+
+            // Create submission object
+            const submission = {
+                id: `SUB-${new Date().getFullYear()}-${String(submissionCounter).padStart(3, '0')}`,
+                type: submissionType,
+                severity: severityLevel,
+                confidence: confidenceLevel,
+                notes: additionalNotes,
+                tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+                urgent: urgentFlag,
+                timestamp: new Date(),
+                data: dynamicData,
+                status: 'submitted'
+            };
+
+            submissions.push(submission);
+            submissionCounter++;
+
+            // Display submission results
+            displaySubmissionResults(submission);
+            
+            // Add to system logs
+            addLog('info', `Manual submission received: ${submission.id} (${submissionType})`);
+            if (urgentFlag) {
+                addLog('error', `URGENT SUBMISSION: ${submission.id} requires immediate attention`);
+            }
+
+            // Process the submission
+            processSubmission(submission);
+            
+            // Update recent submissions
+            updateRecentSubmissions();
+        }
+
+        // Display submission results
+        function displaySubmissionResults(submission) {
+            const resultsSection = document.getElementById('submission-results');
+            const detailsDiv = document.getElementById('submission-details');
+            
+            const confidenceMap = {
+                'low': '30-50%',
+                'medium': '51-75%',
+                'high': '76-90%',
+                'very-high': '91-100%'
+            };
+
+            const severityColors = {
+                'low': '#4ecdc4',
+                'medium': '#ffa726',
+                'high': '#ff6b6b',
+                'critical': '#e53e3e'
+            };
+
+            detailsDiv.innerHTML = `
+                <div class="threat-card" style="border-color: ${severityColors[submission.severity]};">
+                    <h4>📋 Submission ID: ${submission.id}</h4>
+                    <p><strong>Type:</strong> ${submission.type.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                    <p><strong>Severity:</strong> <span style="color: ${severityColors[submission.severity]};">${submission.severity.toUpperCase()}</span></p>
+                    <p><strong>Confidence:</strong> ${confidenceMap[submission.confidence]}</p>
+                    <p><strong>Submitted:</strong> ${submission.timestamp.toLocaleString()}</p>
+                    ${submission.urgent ? '<p><strong>🚨 URGENT FLAG ACTIVATED</strong></p>' : ''}
+                    ${submission.tags.length > 0 ? `<p><strong>Tags:</strong> ${submission.tags.join(', ')}</p>` : ''}
+                    <p><strong>Status:</strong> <span style="color: #4ecdc4;">Successfully Submitted</span></p>
+                    
+                    <div style="margin-top: 15px;">
+                        <h5>📊 Next Steps:</h5>
+                        <ul style="margin-left: 20px; color: #cccccc;">
+                            <li>Automated analysis initiated</li>
+                            <li>Threat intelligence correlation in progress</li>
+                            <li>Security team notification sent</li>
+                            ${submission.urgent ? '<li style="color: #ff6b6b;">PRIORITY QUEUE: Expedited processing</li>' : ''}
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            resultsSection.style.display = 'block';
+        }
+
+        // Process submission (simulate AI analysis)
+        function processSubmission(submission) {
+            // Simulate processing time
+            setTimeout(() => {
+                const riskScore = Math.floor(Math.random() * 40) + 20;
+                
+                if (submission.severity === 'critical' || submission.urgent) {
+                    addLog('error', `HIGH PRIORITY: Processing ${submission.id} with risk score ${riskScore}%`);
+                } else {
+                    addLog('info', `Processing ${submission.id} - Initial risk assessment: ${riskScore}%`);
+                }
+                
+                // Update submission status
+                submission.status = 'processing';
+                submission.riskScore = riskScore;
+                
+                // Simulate correlation with threat intelligence
+                setTimeout(() => {
+                    submission.status = 'analyzed';
+                    addLog('info', `Analysis complete for ${submission.id}`);
+                    
+                    // Update threat indicators based on submission
+                    if (submission.severity === 'high' || submission.severity === 'critical') {
+                        updateThreatIndicators();
+                    }
+                    
+                    updateRecentSubmissions();
+                }, 3000);
+                
+            }, 1500);
+        }
+
+        // Validate submission before submitting
+        function validateSubmission() {
+            const requiredFields = [];
+            const submissionType = document.getElementById('submission-type').value;
+            
+            // Check dynamic form fields
+            const dynamicForm = document.getElementById('dynamic-form');
+            const inputs = dynamicForm.querySelectorAll('input[required], select[required], textarea[required]');
+            
+            inputs.forEach(input => {
+                if (!input.value.trim()) {
+                    requiredFields.push(input.previousElementSibling.textContent);
+                }
+            });
+            
+            if (requiredFields.length > 0) {
+                alert(`Please fill in the following required fields:\n- ${requiredFields.join('\n- ')}`);
+                return false;
+            }
+            
+            // Validate specific field formats
+            const validationErrors = [];
+            
+            if (submissionType === 'suspicious-ip') {
+                const ipField = document.getElementById('ip-address');
+                if (ipField && !isValidIP(ipField.value)) {
+                    validationErrors.push('Invalid IP address format');
+                }
+            }
+            
+            if (submissionType === 'phishing-email') {
+                const emailField = document.getElementById('sender-email');
+                if (emailField && !isValidEmail(emailField.value)) {
+                    validationErrors.push('Invalid email address format');
+                }
+            }
+            
+            if (validationErrors.length > 0) {
+                alert(`Validation errors:\n- ${validationErrors.join('\n- ')}`);
+                return false;
+            }
+            
+            alert('✅ Validation successful! All fields are properly formatted.');
+            return true;
+        }
+
+        // Clear form
+        function clearForm() {
+            if (confirm('Are you sure you want to clear all form data?')) {
+                document.getElementById('dynamic-form').innerHTML = '';
+                document.getElementById('additional-notes').value = '';
+                document.getElementById('tags').value = '';
+                document.getElementById('urgent-flag').checked = false;
+                document.getElementById('submission-results').style.display = 'none';
+                
+                // Reset to default submission type
+                document.getElementById('submission-type').selectedIndex = 0;
+                updateSubmissionForm();
+                
+                addLog('info', 'Manual submission form cleared');
+            }
+        }
+
+        // Update recent submissions display
+        function updateRecentSubmissions() {
+            const recentDiv = document.getElementById('recent-submissions');
+            const recentSubmissions = submissions.slice(-5).reverse(); // Show last 5 submissions
+            
+            if (recentSubmissions.length > 0) {
+                recentDiv.innerHTML = recentSubmissions.map(sub => {
+                    const statusColors = {
+                        'submitted': '#ffa726',
+                        'processing': '#42a5f5',
+                        'analyzed': '#4ecdc4',
+                        'blocked': '#ff6b6b'
+                    };
+                    
+                    const typeIcons = {
+                        'incident': '🚨',
+                        'suspicious-ip': '🌐',
+                        'malware-sample': '🦠',
+                        'phishing-email': '📧',
+                        'vulnerability': '🔓',
+                        'threat-intel': '🎯',
+                        'user-behavior': '👤',
+                        'network-anomaly': '📊'
+                    };
+                    
+                    return `
+                        <div class="threat-card">
+                            <h4>${typeIcons[sub.type] || '📋'} ${sub.id}</h4>
+                            <p><strong>Type:</strong> ${sub.type.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                            <p><strong>Submitted:</strong> ${getTimeAgo(sub.timestamp)}</p>
+                            <p><strong>Status:</strong> <span style="color: ${statusColors[sub.status]};">${sub.status.toUpperCase()}</span></p>
+                            ${sub.riskScore ? `<p><strong>Risk Score:</strong> ${sub.riskScore}%</p>` : ''}
+                            ${sub.urgent ? '<p style="color: #ff6b6b;"><strong>🚨 URGENT</strong></p>' : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        // Helper functions
+        function isValidIP(ip) {
+            const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            return ipRegex.test(ip);
+        }
+
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function getTimeAgo(timestamp) {
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - timestamp) / 1000);
+            
+            if (diffInSeconds < 60) return 'Just now';
+            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+            return `${Math.floor(diffInSeconds / 86400)} days ago`;
+        }
+        function init() {
+            // Update threat indicators every 5 seconds
+            setInterval(updateThreatIndicators, 5000);
+            
+            // Update statistics every 10 seconds
+            setInterval(updateStats, 10000);
+            
+            // Add initial system logs
+            addLog('info', 'AI-Enhanced Cybersecurity Threat Detector initialized');
+            addLog('info', 'All monitoring systems online');
+            addLog('info', 'Threat intelligence database updated');
+            
+            // Populate sample data
+            document.getElementById('input-data').placeholder = 
+                'Examples:\n' +
+                '• URL: https://suspicious-site.com/login\n' +
+                '• Email: "Urgent: Click here to verify your account"\n' +
+                '• IP: 192.168.1.100\n' +
+                '• File hash: d41d8cd98f00b204e9800998ecf8427e';
+        }
+
+        // Start the application
+        init();
+    </script>
+</body>
+</html>

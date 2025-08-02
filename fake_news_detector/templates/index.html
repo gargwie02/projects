@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fake News Detector</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: url("/static/image.jpg") no-repeat center center fixed;
+            background-size: cover;
+            color: #ffffff;
+            text-align: center;
+            padding: 50px;
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px #000;
+        }
+
+        form {
+            margin: 30px auto;
+            width: 50%;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+        }
+
+        textarea {
+            width: 90%;
+            height: 200px;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            margin-bottom: 20px;
+            resize: none;
+            font-size: 16px;
+        }
+
+        input[type="submit"] {
+            background-color: #00b894;
+            color: #fff;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #019875;
+        }
+
+        h3 {
+            margin-top: 30px;
+            font-size: 28px;
+            color: #00cec9;
+            text-shadow: 1px 1px 3px #000;
+        }
+    </style>
+</head>
+<body>
+    <h2>📰 Fake News Detector</h2>
+    <form method="POST" action="/predict">
+        <textarea name="news_text" placeholder="Paste news content here..." required></textarea><br>
+        <input type="submit" value="Check News">
+    </form>
+    {% if prediction_text %}
+    <h3>{{ prediction_text }}</h3>
+    {% endif %}
+</body>
+</html>

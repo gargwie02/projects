@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firewall Log Excel Report Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            margin-bottom: 1rem;
+        }
+
+        .upload-section {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            text-align: center;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(59, 130, 246, 0.5);
+            border-radius: 12px;
+            padding: 2rem;
+            background: rgba(30, 41, 59, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: rgba(59, 130, 246, 0.8);
+            background: rgba(30, 41, 59, 0.5);
+        }
+
+        .upload-area.dragover {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+            margin: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .btn.danger {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+        }
+
+        .card {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #dc2626, #ef4444);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            padding: 8px;
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            border-radius: 8px;
+        }
+
+        .card h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem;
+            margin: 0.5rem 0;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 8px;
+        }
+
+        .metric-value {
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+        }
+
+        .data-table th {
+            background: rgba(15, 23, 42, 0.8);
+            font-weight: 600;
+        }
+
+        .chart-container {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 8px;
+            padding: 1rem;
+            height: 250px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #3b82f6;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: #10b981;
+            color: #6ee7b7;
+        }
+
+        .alert-error {
+            background: rgba(220, 38, 38, 0.1);
+            border-color: #dc2626;
+            color: #fca5a5;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Firewall Log Report Generator</h1>
+            <p>Upload your firewall log file (Excel or CSV) for comprehensive security analysis</p>
+        </div>
+
+        <div class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📁</div>
+                <div style="font-size: 1.2rem; margin-bottom: 1rem;">Drop your log file here or click to browse</div>
+                <div style="color: #94a3b8; font-size: 0.9rem;">
+                    Supported formats: .xlsx, .xls, .csv | Max size: 50MB
+                </div>
+                <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls,.csv" />
+            </div>
+            
+            <div class="loading hidden" id="loadingIndicator">
+                Analyzing your firewall logs...
+            </div>
+        </div>
+
+        <div class="hidden" id="analysisSection">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <h3>Log Summary</h3>
+                </div>
+                <div class="metric">
+                    <span>Total Log Entries</span>
+                    <span class="metric-value" id="totalEntries">0</span>
+                </div>
+                <div class="metric">
+                    <span>Unique Source IPs</span>
+                    <span class="metric-value" id="uniqueSourceIPs">0</span>
+                </div>
+                <div class="metric">
+                    <span>Blocked Connections</span>
+                    <span class="metric-value" id="blockedConnections">0</span>
+                </div>
+                <div class="metric">
+                    <span>Allowed Connections</span>
+                    <span class="metric-value" id="allowedConnections">0</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🎯</div>
+                    <h3>Top Threat Sources</h3>
+                </div>
+                <div id="topThreats"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🔌</div>
+                    <h3>Most Targeted Ports</h3>
+                </div>
+                <div id="targetedPorts"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📈</div>
+                    <h3>Attack Timeline</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="attackChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📋</div>
+                    <h3>Sample Log Entries</h3>
+                </div>
+                <div id="sampleLogs"></div>
+            </div>
+
+            <div style="text-align: center; margin: 2rem 0;">
+                <button class="btn success" onclick="generateReport()">📄 Generate Detailed Report</button>
+                <button class="btn danger" onclick="exportToExcel()">📊 Export Analysis to Excel</button>
+                <button class="btn" onclick="resetAnalysis()">🔄 Upload New File</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let analysisData = null;
+        let chartInstance = null;
+        let rawLogData = null;
+
+        // File upload handling
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const analysisSection = document.getElementById('analysisSection');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.name.match(/\.(xlsx|xls|csv)$/)) {
+                showAlert('Please upload a valid Excel (.xlsx, .xls) or CSV (.csv) file', 'error');
+                return;
+            }
+
+            if (file.size > 50 * 1024 * 1024) {
+                showAlert('File size exceeds 50MB limit', 'error');
+                return;
+            }
+
+            loadingIndicator.classList.remove('hidden');
+            
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+            
+            if (fileExtension === 'csv') {
+                handleCSVFile(file);
+            } else {
+                handleExcelFile(file);
+            }
+        }
+
+        function handleCSVFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const csvData = e.target.result;
+                    Papa.parse(csvData, {
+                        header: true,
+                        skipEmptyLines: true,
+                        complete: function(results) {
+                            processLogData(results.data);
+                        },
+                        error: function(error) {
+                            showAlert('Error parsing CSV file: ' + error.message, 'error');
+                            loadingIndicator.classList.add('hidden');
+                        }
+                    });
+                } catch (error) {
+                    showAlert('Error reading CSV file: ' + error.message, 'error');
+                    loadingIndicator.classList.add('hidden');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function handleExcelFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const workbook = XLSX.read(e.target.result, { type: 'binary' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    processLogData(jsonData);
+                } catch (error) {
+                    showAlert('Error reading Excel file: ' + error.message, 'error');
+                    loadingIndicator.classList.add('hidden');
+                }
+            };
+            reader.readAsBinaryString(file);
+        }
+
+        function processLogData(data) {
+            if (!data || data.length === 0) {
+                showAlert('No data found in the file', 'error');
+                loadingIndicator.classList.add('hidden');
+                return;
+            }
+
+            // Normalize column names
+            const normalizedData = data.map(row => {
+                const normalizedRow = {};
+                Object.keys(row).forEach(key => {
+                    if (!key || key.trim() === '') return;
+                    
+                    const lowerKey = key.toLowerCase().trim();
+                    if (lowerKey.includes('timestamp') || lowerKey.includes('time') || lowerKey.includes('date')) {
+                        normalizedRow.timestamp = row[key];
+                    } else if (lowerKey.includes('source') && lowerKey.includes('ip')) {
+                        normalizedRow.sourceIP = row[key];
+                    } else if (lowerKey.includes('destination') && lowerKey.includes('ip')) {
+                        normalizedRow.destinationIP = row[key];
+                    } else if (lowerKey.includes('port')) {
+                        normalizedRow.port = row[key];
+                    } else if (lowerKey.includes('action') || lowerKey.includes('status')) {
+                        normalizedRow.action = row[key];
+                    } else if (lowerKey.includes('protocol')) {
+                        normalizedRow.protocol = row[key];
+                    }
+                });
+                return normalizedRow;
+            }).filter(row => Object.keys(row).length > 0);
+
+            if (normalizedData.length === 0) {
+                showAlert('No valid log entries found. Please check your file format.', 'error');
+                loadingIndicator.classList.add('hidden');
+                return;
+            }
+
+            rawLogData = normalizedData;
+            analysisData = analyzeLogData(normalizedData);
+            displayAnalysis(analysisData);
+            loadingIndicator.classList.add('hidden');
+            analysisSection.classList.remove('hidden');
+            
+            showAlert(`Log analysis completed! Processed ${normalizedData.length} entries.`, 'success');
+        }
+
+        function analyzeLogData(data) {
+            const analysis = {
+                totalEntries: data.length,
+                uniqueSourceIPs: new Set(),
+                blockedConnections: 0,
+                allowedConnections: 0,
+                topThreats: {},
+                targetedPorts: {},
+                protocols: {},
+                hourlyDistribution: {}
+            };
+
+            data.forEach(entry => {
+                if (entry.sourceIP) {
+                    analysis.uniqueSourceIPs.add(entry.sourceIP);
+                    
+                    if (!analysis.topThreats[entry.sourceIP]) {
+                        analysis.topThreats[entry.sourceIP] = 0;
+                    }
+                    analysis.topThreats[entry.sourceIP]++;
+                }
+
+                if (entry.action) {
+                    const action = String(entry.action).toLowerCase();
+                    if (action.includes('block') || action.includes('deny') || action.includes('drop')) {
+                        analysis.blockedConnections++;
+                    } else if (action.includes('allow') || action.includes('accept')) {
+                        analysis.allowedConnections++;
+                    }
+                }
+
+                if (entry.port) {
+                    const port = String(entry.port);
+                    if (!analysis.targetedPorts[port]) {
+                        analysis.targetedPorts[port] = 0;
+                    }
+                    analysis.targetedPorts[port]++;
+                }
+
+                if (entry.timestamp) {
+                    try {
+                        const date = new Date(entry.timestamp);
+                        if (!isNaN(date.getTime())) {
+                            const hour = date.getHours();
+                            if (!analysis.hourlyDistribution[hour]) {
+                                analysis.hourlyDistribution[hour] = 0;
+                            }
+                            analysis.hourlyDistribution[hour]++;
+                        }
+                    } catch (e) {
+                        // Ignore invalid timestamps
+                    }
+                }
+            });
+
+            return analysis;
+        }
+
+        function displayAnalysis(analysis) {
+            document.getElementById('totalEntries').textContent = analysis.totalEntries.toLocaleString();
+            document.getElementById('uniqueSourceIPs').textContent = analysis.uniqueSourceIPs.size.toLocaleString();
+            document.getElementById('blockedConnections').textContent = analysis.blockedConnections.toLocaleString();
+            document.getElementById('allowedConnections').textContent = analysis.allowedConnections.toLocaleString();
+
+            // Top threats
+            const topThreatsDiv = document.getElementById('topThreats');
+            const sortedThreats = Object.entries(analysis.topThreats)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 10);
+
+            topThreatsDiv.innerHTML = sortedThreats.map(([ip, count]) => `
+                <div class="metric">
+                    <span style="font-family: monospace; color: #ef4444;">${ip}</span>
+                    <span class="metric-value">${count.toLocaleString()} attempts</span>
+                </div>
+            `).join('');
+
+            // Targeted ports
+            const targetedPortsDiv = document.getElementById('targetedPorts');
+            const sortedPorts = Object.entries(analysis.targetedPorts)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 10);
+
+            targetedPortsDiv.innerHTML = sortedPorts.map(([port, count]) => `
+                <div class="metric">
+                    <span style="font-family: monospace; color: #10b981;">Port ${port}</span>
+                    <span class="metric-value">${count.toLocaleString()} attempts</span>
+                </div>
+            `).join('');
+
+            // Sample logs
+            const sampleLogsDiv = document.getElementById('sampleLogs');
+            const sampleData = rawLogData.slice(0, 10);
+            
+            sampleLogsDiv.innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Source IP</th>
+                            <th>Destination IP</th>
+                            <th>Port</th>
+                            <th>Action</th>
+                            <th>Protocol</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sampleData.map(entry => `
+                            <tr>
+                                <td>${entry.timestamp || 'N/A'}</td>
+                                <td style="font-family: monospace; color: #ef4444;">${entry.sourceIP || 'N/A'}</td>
+                                <td style="font-family: monospace;">${entry.destinationIP || 'N/A'}</td>
+                                <td style="font-family: monospace; color: #10b981;">${entry.port || 'N/A'}</td>
+                                <td>${entry.action || 'N/A'}</td>
+                                <td>${entry.protocol || 'N/A'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            // Create chart
+            createChart(analysis.hourlyDistribution);
+        }
+
+        function createChart(hourlyData) {
+            const ctx = document.getElementById('attackChart').getContext('2d');
+            
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            const hours = Array.from({length: 24}, (_, i) => i);
+            const data = hours.map(hour => hourlyData[hour] || 0);
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: hours.map(h => `${h}:00`),
+                    datasets: [{
+                        label: 'Log Entries',
+                        data: data,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e2e8f0'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: '#94a3b8'
+                            },
+                            grid: {
+                                color: 'rgba(148, 163, 184, 0.1)'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: '#94a3b8'
+                            },
+                            grid: {
+                                color: 'rgba(148, 163, 184, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.upload-section'));
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        function generateReport() {
+            if (!analysisData) {
+                showAlert('No data available to generate report', 'error');
+                return;
+            }
+
+            const report = generateDetailedReport(analysisData);
+            downloadTextFile(report, 'firewall-log-report.txt');
+            showAlert('Detailed report generated successfully!', 'success');
+        }
+
+        function exportToExcel() {
+            if (!rawLogData) {
+                showAlert('No data available to export', 'error');
+                return;
+            }
+
+            const ws = XLSX.utils.json_to_sheet(rawLogData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Firewall Logs');
+            
+            const analysisSheet = XLSX.utils.json_to_sheet([
+                { Metric: 'Total Entries', Value: analysisData.totalEntries },
+                { Metric: 'Unique Source IPs', Value: analysisData.uniqueSourceIPs.size },
+                { Metric: 'Blocked Connections', Value: analysisData.blockedConnections },
+                { Metric: 'Allowed Connections', Value: analysisData.allowedConnections }
+            ]);
+            XLSX.utils.book_append_sheet(wb, analysisSheet, 'Analysis Summary');
+            
+            XLSX.writeFile(wb, 'firewall-log-analysis.xlsx');
+            showAlert('Excel file exported successfully!', 'success');
+        }
+
+        function resetAnalysis() {
+            analysisData = null;
+            rawLogData = null;
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+            
+            document.getElementById('fileInput').value = '';
+            analysisSection.classList.add('hidden');
+            loadingIndicator.classList.add('hidden');
+            
+            // Remove any existing alerts
+            document.querySelectorAll('.alert').forEach(alert => alert.remove());
+            
+            showAlert('Ready for new file upload', 'success');
+        }
+
+        function generateDetailedReport(data) {
+            const date = new Date().toLocaleString();
+            const blockRate = ((data.blockedConnections / data.totalEntries) * 100).toFixed(2);
+            
+            return `
+FIREWALL LOG ANALYSIS REPORT
+Generated: ${date}
+
+=== EXECUTIVE SUMMARY ===
+Total Log Entries: ${data.totalEntries.toLocaleString()}
+Unique Source IPs: ${data.uniqueSourceIPs.size.toLocaleString()}
+Blocked Connections: ${data.blockedConnections.toLocaleString()}
+Allowed Connections: ${data.allowedConnections.toLocaleString()}
+Block Rate: ${blockRate}%
+
+=== TOP THREAT SOURCES ===
+${Object.entries(data.topThreats)
+    .sort(([,a], [,b]) => b - a)
+    .slice(0, 10)
+    .map(([ip, count], index) => `${index + 1}. ${ip} - ${count.toLocaleString()} attempts`)
+    .join('\n')}
+
+=== MOST TARGETED PORTS ===
+${Object.entries(data.targetedPorts)
+    .sort(([,a], [,b]) => b - a)
+    .slice(0, 10)
+    .map(([port, count], index) => `${index + 1}. Port ${port} - ${count.toLocaleString()} attempts`)
+    .join('\n')}
+
+=== RECOMMENDATIONS ===
+1. Monitor top threat sources for persistent attacks
+2. Consider blocking repeat offenders at network perimeter
+3. Review security policies for most targeted ports
+4. Implement rate limiting for high-traffic sources
+5. Regular log analysis to identify emerging threats
+
+Report generated by Firewall Log Report Generator
+            `.trim();
+        }
+
+        function downloadTextFile(content, filename) {
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
